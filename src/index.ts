@@ -1,43 +1,53 @@
-import { createTransform } from "redux-persist";
+import { createTransform, type Transform } from "redux-persist";
 
 /**
- * `redux-persist` transformer that reset the persisted redux state after a specific period of time.
- * @param {number} expireIn For how long the state is going to be preserved
- * @param {string} [expireKey="persistencyExpiration"] Key used by the localStorage
- * @param {any} defaultValue Value to which state will be cleared to
+ * Creates a transform that expires redux state after a specified time period.
+ *
+ * @template State - The type of state being transformed
+ * @param {number} expireIn - Time in milliseconds until the state expires
+ * @param {string} [expireKey="persistencyExpiration"] - Key used in localStorage to track expiration
+ * @param {State} [defaultValue={}] - Value to which state will reset when expired
+ * @returns {Transform<State, State>} A redux-persist transform
+ *
+ * @example
+ * // State expires after 24 hours
+ * const expireTransform = transformExpire<RootState>(
+ *   24 * 60 * 60 * 1000,
+ *   "myApp.expiration",
+ *   { user: null, settings: defaultSettings }
+ * );
  */
-
-const transformExpire = (
+const transformExpire = <State = Record<string, unknown>>(
 	expireIn: number,
 	expireKey = "persistencyExpiration",
-	defaultValue = {},
-) => {
-	// biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
-	let storedExpiration;
-	try {
-		storedExpiration = localStorage.getItem(expireKey);
-	} catch (e) {}
-
+	defaultValue: State = {} as State,
+): Transform<State, State> => {
 	let expired = false;
 
-	if (storedExpiration) {
-		const expiring = Number.parseInt(storedExpiration);
-		const now = new Date().getTime();
-		expired = Boolean(expiring) && !Number.isNaN(expiring) && now > expiring;
-	}
+	try {
+		const storedExpiration = localStorage.getItem(expireKey);
+		if (storedExpiration) {
+			const expirationTime = Number.parseInt(storedExpiration, 10);
+			const now = new Date().getTime();
+			expired = !Number.isNaN(expirationTime) && now > expirationTime;
+		}
+	} catch {}
 
 	return createTransform(
-		(inboundState) => {
+		// inbound (state → storage)
+		(inboundState: State): State => {
+			// Schedule expiration time update for next tick
 			setTimeout((): void => {
-				const expireValue = (new Date().getTime() + expireIn).toString();
 				try {
+					const expireValue = (new Date().getTime() + expireIn).toString();
 					localStorage.setItem(expireKey, expireValue);
-				} catch (e) {}
+				} catch {}
 			}, 0);
 
 			return inboundState;
 		},
-		(outboundState) => (expired ? defaultValue : outboundState),
+		// outbound (storage → state)
+		(outboundState: State): State => (expired ? defaultValue : outboundState),
 	);
 };
 

@@ -16,7 +16,7 @@ describe("redux-persist-transform-expire-in", () => {
 	const createTransformMock = jest.spyOn(
 		reduxPersist,
 		"createTransform",
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		// biome-ignore lint/suspicious/noExplicitAny: keep the test simple
 	) as any;
 	createTransformMock.mockImplementation(() => {});
 
