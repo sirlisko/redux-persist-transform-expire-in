@@ -1,5 +1,11 @@
 # redux-persist-transform-expire-in
 
+## 1.1.3
+
+### Patch Changes
+
+- a1295aa: improved type safety
+
 ## 1.1.2
 
 ### Patch Changes
