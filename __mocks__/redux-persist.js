@@ -1,3 +1,3 @@
 module.exports = {
-  createTransform: jest.fn(),
+	createTransform: jest.fn(),
 };
