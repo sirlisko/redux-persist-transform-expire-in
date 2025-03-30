@@ -1,10 +1,15 @@
 # redux-persist-transform-expire-in [![npm][npm-image]][npm-url] [![Coverage Status][coverage-image]][coverage-url]
 
-> `redux-persist` transform that reset the persisted redux data after a specific period of time.
+> A `redux-persist` transform that expires persisted redux data after a specified period of time.
 
-It creates in the localStorage a property with the expiration date of the [`redux-persist`](https://github.com/rt2zz/redux-persist).
+This transform automatically manages expiration of your Redux state. It creates an entry in localStorage with the expiration timestamp for your persisted state.
 
-Every time the state is updated the expiration date is postponed.
+**Key features:**
+
+- Expire persisted Redux state after a configurable time period
+- Updates expiration timestamp on each state update
+- TypeScript support with generics for type safety
+- Simple integration with redux-persist
 
 See a live demo at [https://codesandbox.io/s/redux-persist-transform-expire-in-lmj74q](https://codesandbox.io/s/redux-persist-transform-expire-in-lmj74q).
 
@@ -16,41 +21,68 @@ npm install redux-persist-transform-expire-in
 
 ## Example
 
-```js
-import { createStore, applyMiddleware } from "redux";
-import { persistStore, persistCombineReducers } from "redux-persist";
+```ts
+import { createStore } from "redux";
+import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import expireInTransform from "redux-persist-transform-expire-in";
 
-const reducers = {
-  // your reducers
+interface RootState {
+  user: {
+    id: string | null;
+    name: string | null;
+  };
+  settings: {
+    theme: "light" | "dark";
+    notifications: boolean;
+  };
+}
+
+const initialState: RootState = {
+  user: { id: null, name: null },
+  settings: { theme: "light", notifications: true },
 };
 
-const expireIn = 48 * 60 * 60 * 1000; // expire in 48h
-const expirationKey = "expirationKey";
+const rootReducer = (state = initialState, action): RootState => {
+  // your reducer logic
+  return state;
+};
+
+// Expire persisted state after 7 days
+const expireIn = 7 * 24 * 60 * 60 * 1000;
+const expirationKey = "myApp.expiration";
+
 const persistConfig = {
-  key: "v1",
+  key: "root",
   storage,
-  transforms: [expireInTransform(expireIn, expirationKey, [])],
+  transforms: [
+    expireInTransform<RootState>(expireIn, expirationKey, initialState),
+  ],
 };
 
-const persistedReducer = persistCombineReducers(persistConfig, reducer);
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const store = createStore(persistedReducer);
 export const persistor = persistStore(store);
 ```
 
-## Configuration
+## How It Works
 
-| Attr          | Type   | Default                 | Notes                                           |
-| ------------- | ------ | ----------------------- | ----------------------------------------------- |
-| expireIn      | Number | none                    | For how long the state is going to be preserved |
-| expirationKey | String | 'persistencyExpiration' | Key used by the localStorage                    |
-| defaultValue  | any    | {}                      | Value to which state will be cleared to         |
+1. When the transform is initialized, it checks localStorage for any existing expiration timestamp
+2. If an expiration timestamp exists and is in the past, the outbound transform returns the default state
+3. Each time the state is updated, the transform resets the expiration timestamp to the current time + expireIn
+4. This approach ensures that frequently used apps won't expire, while inactive apps will reset after the specified period
+
+## Configuration Options
+
+| Parameter     | Type   | Default                 | Description                                            |
+| ------------- | ------ | ----------------------- | ------------------------------------------------------ |
+| expireIn      | number | (required)              | Time in milliseconds until the state expires           |
+| expirationKey | string | 'persistencyExpiration' | Key used in localStorage to store expiration timestamp |
+| defaultValue  | any    | {}                      | Value to reset state to when expired                   |
 
 ## Difference with `redux-persist-transform-expire`
 
-In [`redux-persist-transform-expire`](https://github.com/gabceb/redux-persist-transform-expire) you need to add to your reducers a specific expireAt key.
-`redux-persist-transform-expire-in` is dealing with the whole state handled by `redux-persist`.
+Unlike [`redux-persist-transform-expire`](https://github.com/gabceb/redux-persist-transform-expire), which requires you to add a specific `expireAt` key to your reducers. `redux-persist-transform-expire-in` works with your entire persisted state and there is no need to modify your reducers to include expiration logic.
 
 [npm-image]: https://img.shields.io/npm/v/redux-persist-transform-expire-in.svg
 [npm-url]: https://npmjs.com/package/redux-persist-transform-expire-in
