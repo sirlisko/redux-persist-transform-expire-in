@@ -12,10 +12,10 @@ jobs:
     env:
       github-token: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10
       - uses: actions/setup-node@v3
         with:
           node-version: 18.x
