@@ -19,12 +19,7 @@
 		"type": "git",
 		"url": "git+https://github.com/sirLisko/redux-persist-transform-expire-in.git"
 	},
-	"keywords": [
-		"redux",
-		"redux-persist",
-		"redux-persist-transform",
-		"expire"
-	],
+	"keywords": ["redux", "redux-persist", "redux-persist-transform", "expire"],
 	"author": "Luca Lischetti <luca@sirlisko.com> (https://sirlisko.com)",
 	"license": "MIT",
 	"bugs": {
