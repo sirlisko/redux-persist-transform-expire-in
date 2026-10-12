@@ -11,5 +11,5 @@
 		"noUncheckedIndexedAccess": true,
 		"noEmit": true
 	},
-	"include": ["src"]
+	"include": ["src", "tsdown.config.ts"]
 }

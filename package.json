@@ -24,7 +24,7 @@
 		"dist"
 	],
 	"scripts": {
-		"build": "tsup src/index.ts --format cjs,esm --dts",
+		"build": "tsdown",
 		"check": "biome check --write .",
 		"test": "node --test \"src/**/*.test.ts\"",
 		"test:coverage": "node --test --experimental-test-coverage --test-coverage-include=\"src/**\" --test-coverage-exclude=\"src/**/*.test.ts\" --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100 \"src/**/*.test.ts\"",
@@ -57,7 +57,7 @@
 		"@types/node": "^24.19.2",
 		"redux": "^5.0.1",
 		"redux-persist": "^6.0.0",
-		"tsup": "^8.5.1",
+		"tsdown": "^0.23.1",
 		"typescript": "^5.9.3"
 	},
 	"packageManager": "pnpm@10.7.0"
