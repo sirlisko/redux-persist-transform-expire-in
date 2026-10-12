@@ -28,7 +28,7 @@ const transformExpire = <State = Record<string, unknown>>(
 		const storedExpiration = localStorage.getItem(expireKey);
 		if (storedExpiration) {
 			const expirationTime = Number.parseInt(storedExpiration, 10);
-			const now = new Date().getTime();
+			const now = Date.now();
 			expired = !Number.isNaN(expirationTime) && now > expirationTime;
 		}
 	} catch {}
@@ -39,7 +39,7 @@ const transformExpire = <State = Record<string, unknown>>(
 			// Schedule expiration time update for next tick
 			setTimeout((): void => {
 				try {
-					const expireValue = (new Date().getTime() + expireIn).toString();
+					const expireValue = (Date.now() + expireIn).toString();
 					localStorage.setItem(expireKey, expireValue);
 				} catch {}
 			}, 0);
