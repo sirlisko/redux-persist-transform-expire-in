@@ -12,8 +12,8 @@
 		"build": "tsup src/index.ts --format cjs,esm --dts",
 		"format": "biome format --write .",
 		"lint": "biome lint --write .",
-		"test": "jest",
-		"test:coverage": "jest --coverage",
+		"test": "node --test \"src/**/*.test.ts\"",
+		"test:coverage": "node --test --experimental-test-coverage --test-coverage-include=\"src/**\" --test-coverage-exclude=\"src/**/*.test.ts\" --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100 \"src/**/*.test.ts\"",
 		"typecheck": "tsc --noEmit"
 	},
 	"repository": {
@@ -38,14 +38,9 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
-		"@types/jest": "^29.5.14",
-		"jest": "^29.7.0",
-		"jest-environment-jsdom": "^29.7.0",
-		"mockdate": "^3.0.5",
-		"react": "^18.2.0",
+		"@types/node": "^24.19.2",
 		"redux": "^4.2.1",
 		"redux-persist": "^6.0.0",
-		"ts-jest": "^29.3.0",
 		"tsup": "^8.4.0",
 		"typescript": "^5.8.2"
 	},
