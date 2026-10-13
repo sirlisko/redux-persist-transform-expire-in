@@ -9,6 +9,8 @@ A [`redux-persist`](https://github.com/rt2zz/redux-persist) transform that reset
 - **Tiny.** One function, no dependencies.
 - **Typed.** TypeScript declarations included.
 
+Try it in the [live demo on CodeSandbox](https://codesandbox.io/s/redux-persist-transform-expire-in-lmj74q).
+
 ## Install
 
 ```bash
@@ -32,10 +34,15 @@ const persistConfig = {
   transforms: [expireIn(sevenDays)],
 };
 
-export const persistedReducer = persistReducer(persistConfig, rootReducer);
+export const persistedReducer = persistReducer<ReturnType<typeof rootReducer>>(
+  persistConfig,
+  rootReducer,
+);
 ```
 
 If nothing has been persisted for seven days, the app starts from your reducers' initial state.
+
+Passing the state type to `persistReducer` keeps it typed with Redux Toolkit 2, where TypeScript can't infer it.
 
 ### Why `autoMergeLevel2`
 
