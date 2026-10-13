@@ -9,6 +9,8 @@ A [`redux-persist`](https://github.com/rt2zz/redux-persist) transform that reset
 - **Tiny.** One function, no dependencies.
 - **Typed.** TypeScript declarations included.
 
+Try it in the [live demo on CodeSandbox](https://codesandbox.io/s/redux-persist-transform-expire-in-lmj74q).
+
 ## Install
 
 ```bash
