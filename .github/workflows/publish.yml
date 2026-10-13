@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  # Trusted publishing: npm verifies this workflow via OIDC, so no NPM_TOKEN
   id-token: write
 
 jobs:
@@ -17,7 +16,6 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
-          # `npm stage publish` needs npm 11.15+, bundled with current Node 24
           node-version: 24
           registry-url: https://registry.npmjs.org
           cache: pnpm
@@ -26,5 +24,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
       - run: pnpm run build
-      # Stage only: a maintainer approves the release on npmjs.com with 2FA
       - run: npm stage publish
