@@ -1,6 +1,6 @@
 {
 	"name": "redux-persist-transform-expire-in",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"description": "A redux-persist transform that resets persisted state after a period of inactivity.",
 	"type": "module",
 	"sideEffects": false,
