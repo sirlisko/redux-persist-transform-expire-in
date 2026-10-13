@@ -1,68 +1,64 @@
 {
 	"name": "redux-persist-transform-expire-in",
-	"version": "1.1.3",
-	"description": "redux-persist transform that reset the persisted redux state after a specific period of time",
-	"main": "dist/index.js",
-	"module": "dist/index.mjs",
-	"types": "dist/index.d.ts",
+	"version": "1.2.0",
+	"description": "A redux-persist transform that resets persisted state after a period of inactivity.",
+	"type": "module",
+	"sideEffects": false,
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.cts",
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
+		},
+		"./package.json": "./package.json"
+	},
 	"files": [
-		"/dist"
+		"dist"
 	],
 	"scripts": {
-		"build": "tsup src/index.ts --format cjs,esm --dts",
-		"format": "biome format --write .",
-		"lint": "biome lint --write .",
-		"prepublish": "npm run build",
-		"release": "pnpm run build && changeset publish",
-		"test": "jest",
-		"test:coverage": "jest --coverage",
+		"build": "tsdown",
+		"check": "biome check --write .",
+		"test": "node --test \"src/**/*.test.ts\"",
+		"test:coverage": "node --test --experimental-test-coverage --test-coverage-include=\"src/**\" --test-coverage-exclude=\"src/**/*.test.ts\" --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100 \"src/**/*.test.ts\"",
 		"typecheck": "tsc --noEmit"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/sirLisko/redux-persist-transform-expire-in.git"
+		"url": "git+https://github.com/sirlisko/redux-persist-transform-expire-in.git"
 	},
 	"keywords": [
 		"redux",
 		"redux-persist",
 		"redux-persist-transform",
-		"expire"
+		"expire",
+		"expiration",
+		"ttl"
 	],
 	"author": "Luca Lischetti <luca@sirlisko.com> (https://sirlisko.com)",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/sirLisko/redux-persist-transform-expire-in/issues"
+		"url": "https://github.com/sirlisko/redux-persist-transform-expire-in/issues"
 	},
-	"homepage": "https://github.com/sirLisko/redux-persist-transform-expire-in#readme",
+	"homepage": "https://github.com/sirlisko/redux-persist-transform-expire-in#readme",
 	"peerDependencies": {
 		"redux": ">=4",
 		"redux-persist": ">=5"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
-		"@changesets/cli": "^2.26.2",
-		"@types/jest": "^29.5.14",
-		"jest": "^29.7.0",
-		"jest-environment-jsdom": "^29.7.0",
-		"mockdate": "^3.0.5",
-		"react": "^18.2.0",
-		"redux": "^4.2.1",
+		"@biomejs/biome": "2.5.15",
+		"@types/node": "^24.19.2",
+		"redux": "^5.0.1",
 		"redux-persist": "^6.0.0",
-		"ts-jest": "^29.3.0",
-		"tsup": "^8.4.0",
-		"typescript": "^5.8.2"
+		"tsdown": "^0.23.1",
+		"typescript": "^7.0.2"
 	},
-	"packageManager": "pnpm@10.7.0",
-	"pnpm": {
-		"overrides": {
-			"@babel/traverse@<7.23.2": ">=7.23.2",
-			"braces@<3.0.3": ">=3.0.3",
-			"ws@>=8.0.0 <8.17.1": ">=8.17.1",
-			"micromatch@<4.0.8": ">=4.0.8",
-			"cross-spawn@<6.0.6": ">=6.0.6",
-			"cross-spawn@>=7.0.0 <7.0.5": ">=7.0.5",
-			"@babel/runtime@<7.26.10": ">=7.26.10",
-			"@babel/helpers@<7.26.10": ">=7.26.10"
-		}
-	}
+	"packageManager": "pnpm@12.11.2"
 }

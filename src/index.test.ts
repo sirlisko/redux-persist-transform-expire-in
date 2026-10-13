@@ -1,94 +1,80 @@
-import expireIn from "./index";
-import mockdate from "mockdate";
-
-import reduxPersist from "redux-persist";
-jest.mock("redux-persist", () => ({
-	createTransform: jest.fn(),
-}));
+import assert from "node:assert/strict";
+import { afterEach, beforeEach, describe, it, mock } from "node:test";
+import expireIn from "./index.ts";
 
 const oneDay = 24 * 60 * 60 * 1000;
+const state = { foo: "bar" };
+
+const storage = new Map<string, string>();
+const localStorageStub = {
+	getItem: (key: string) => storage.get(key) ?? null,
+	setItem: (key: string, value: string) => storage.set(key, value),
+};
+
+const setLocalStorage = (value: unknown) =>
+	Object.defineProperty(globalThis, "localStorage", {
+		value,
+		configurable: true,
+	});
 
 describe("redux-persist-transform-expire-in", () => {
 	beforeEach(() => {
-		mockdate.set("1/1/2000");
+		setLocalStorage(localStorageStub);
+		mock.timers.enable({
+			apis: ["Date", "setTimeout"],
+			now: new Date(2000, 0, 1),
+		});
 	});
-
-	const createTransformMock = jest.spyOn(
-		reduxPersist,
-		"createTransform",
-		// biome-ignore lint/suspicious/noExplicitAny: keep the test simple
-	) as any;
-	createTransformMock.mockImplementation(() => {});
 
 	afterEach(() => {
-		createTransformMock.mockReset();
-		mockdate.reset();
-		localStorage.removeItem("persistencyExpiration");
-		localStorage.removeItem("exp");
+		mock.timers.reset();
+		storage.clear();
 	});
 
-	it("should write the expiration time in the localStorage", (done) => {
-		expireIn(oneDay, "exp");
-		expect(createTransformMock.mock.calls[0][0]({ foo: "bar" })).toEqual({
-			foo: "bar",
-		});
-		setTimeout(() => {
-			expect(Number(localStorage.getItem("exp"))).toBe(
-				new Date(2000, 0, 2).getTime(),
-			);
-			done();
-		}, 1);
-		expect(createTransformMock).toHaveBeenCalled();
+	it("writes the expiration time on inbound", () => {
+		const transform = expireIn(oneDay, "exp");
+		assert.deepEqual(transform.in(state, "root", state), state);
+
+		mock.timers.tick(0);
+		assert.equal(Number(storage.get("exp")), new Date(2000, 0, 2).getTime());
 	});
 
-	it("should return the state if not expiration token present", () => {
-		expireIn(oneDay);
-		expect(createTransformMock).toHaveBeenCalled();
-		expect(createTransformMock.mock.calls[0][1]({ foo: "bar" })).toEqual({
-			foo: "bar",
-		});
+	it("returns the state when there is no expiration", () => {
+		assert.deepEqual(expireIn(oneDay).out(state, "root", state), state);
 	});
 
-	it("should return the state if expiration token is NaN", () => {
-		localStorage.setItem("persistencyExpiration", "foobar");
-		expireIn(oneDay);
-		expect(createTransformMock).toHaveBeenCalled();
-		expect(createTransformMock.mock.calls[0][1]({ foo: "bar" })).toEqual({
-			foo: "bar",
-		});
+	it("returns the state when the expiration is not a number", () => {
+		storage.set("persistencyExpiration", "foobar");
+		assert.deepEqual(expireIn(oneDay).out(state, "root", state), state);
 	});
 
-	it("should return the state if not expired", () => {
-		localStorage.setItem(
-			"persistencyExpiration",
-			(new Date().getTime() + oneDay).toString(),
-		);
-		expireIn(oneDay);
-		expect(createTransformMock).toHaveBeenCalled();
-		expect(createTransformMock.mock.calls[0][1]({ foo: "bar" })).toEqual({
-			foo: "bar",
-		});
+	it("returns the state when not expired", () => {
+		storage.set("persistencyExpiration", String(Date.now() + oneDay));
+		assert.deepEqual(expireIn(oneDay).out(state, "root", state), state);
 	});
 
-	it("should not return the state if expired", () => {
-		localStorage.setItem(
-			"persistencyExpiration",
-			new Date().getTime().toString(),
-		);
-		mockdate.set("1/3/2000");
-		expireIn(oneDay);
-		expect(createTransformMock).toHaveBeenCalled();
-		expect(createTransformMock.mock.calls[0][1]({ foo: "bar" })).toEqual({});
+	it("returns an empty object when expired", () => {
+		storage.set("persistencyExpiration", String(Date.now()));
+		mock.timers.setTime(new Date(2000, 0, 3).getTime());
+		assert.deepEqual(expireIn(oneDay).out(state, "root", state), {});
 	});
 
-	it("should return default the state if expired", () => {
-		localStorage.setItem(
-			"persistencyExpiration",
-			new Date().getTime().toString(),
-		);
-		mockdate.set("1/3/2000");
-		expireIn(oneDay, "persistencyExpiration", []);
-		expect(createTransformMock).toHaveBeenCalled();
-		expect(createTransformMock.mock.calls[0][1]({ foo: "bar" })).toEqual([]);
+	it("returns the default value when expired", () => {
+		storage.set("persistencyExpiration", String(Date.now()));
+		mock.timers.setTime(new Date(2000, 0, 3).getTime());
+		const transform = expireIn<unknown>(oneDay, "persistencyExpiration", []);
+		assert.deepEqual(transform.out(state, "root", state), []);
+	});
+
+	it("keeps the state when localStorage is unavailable", () => {
+		const throws = () => {
+			throw new Error("SecurityError");
+		};
+		setLocalStorage({ getItem: throws, setItem: throws });
+
+		const transform = expireIn(oneDay);
+		assert.deepEqual(transform.out(state, "root", state), state);
+		assert.deepEqual(transform.in(state, "root", state), state);
+		assert.doesNotThrow(() => mock.timers.tick(0));
 	});
 });

@@ -1,21 +1,25 @@
 import { createTransform, type Transform } from "redux-persist";
 
 /**
- * Creates a transform that expires redux state after a specified time period.
+ * Creates a transform that resets persisted state after a period of inactivity.
  *
- * @template State - The type of state being transformed
- * @param {number} expireIn - Time in milliseconds until the state expires
- * @param {string} [expireKey="persistencyExpiration"] - Key used in localStorage to track expiration
- * @param {State} [defaultValue={}] - Value to which state will reset when expired
+ * redux-persist applies transforms per top-level key, so `defaultValue`
+ * replaces each persisted slice, not the whole state.
+ *
+ * @template State - The type of each persisted slice
+ * @param {number} expireIn - Inactivity, in milliseconds, before the state expires
+ * @param {string} [expireKey="persistencyExpiration"] - localStorage key that stores the expiry timestamp
+ * @param {State} [defaultValue={}] - Value each slice is replaced with once expired
  * @returns {Transform<State, State>} A redux-persist transform
  *
  * @example
- * // State expires after 24 hours
- * const expireTransform = transformExpire<RootState>(
- *   24 * 60 * 60 * 1000,
- *   "myApp.expiration",
- *   { user: null, settings: defaultSettings }
- * );
+ * // Pair with autoMergeLevel2 so expired slices fall back to their initial state
+ * const persistConfig = {
+ *   key: "root",
+ *   storage,
+ *   stateReconciler: autoMergeLevel2,
+ *   transforms: [transformExpire(24 * 60 * 60 * 1000)],
+ * };
  */
 const transformExpire = <State = Record<string, unknown>>(
 	expireIn: number,
@@ -28,7 +32,7 @@ const transformExpire = <State = Record<string, unknown>>(
 		const storedExpiration = localStorage.getItem(expireKey);
 		if (storedExpiration) {
 			const expirationTime = Number.parseInt(storedExpiration, 10);
-			const now = new Date().getTime();
+			const now = Date.now();
 			expired = !Number.isNaN(expirationTime) && now > expirationTime;
 		}
 	} catch {}
@@ -39,7 +43,7 @@ const transformExpire = <State = Record<string, unknown>>(
 			// Schedule expiration time update for next tick
 			setTimeout((): void => {
 				try {
-					const expireValue = (new Date().getTime() + expireIn).toString();
+					const expireValue = (Date.now() + expireIn).toString();
 					localStorage.setItem(expireKey, expireValue);
 				} catch {}
 			}, 0);
