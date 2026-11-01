@@ -54,11 +54,11 @@ redux-persist runs transforms once per top-level key of your state, so on expiry
 expireIn<State>(expireIn: number, expireKey?: string, defaultValue?: State)
 ```
 
-| Parameter      | Default                   | Description                                                   |
-| -------------- | ------------------------- | ------------------------------------------------------------- |
-| `expireIn`     | required                  | Inactivity, in milliseconds, before the state expires         |
-| `expireKey`    | `"persistencyExpiration"` | `localStorage` key that stores the expiry timestamp           |
-| `defaultValue` | `{}`                      | Value each persisted slice is replaced with once expired      |
+| Parameter      | Default                   | Description                                              |
+| -------------- | ------------------------- | -------------------------------------------------------- |
+| `expireIn`     | required                  | Inactivity, in milliseconds, before the state expires    |
+| `expireKey`    | `"persistencyExpiration"` | `localStorage` key that stores the expiry timestamp      |
+| `defaultValue` | `{}`                      | Value each persisted slice is replaced with once expired |
 
 Use a different `expireKey` for each persisted reducer that has its own expiry.
 
